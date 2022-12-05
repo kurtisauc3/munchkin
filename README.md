@@ -6,5 +6,5 @@ A multi-player card game.
 
 ```bash
 npm install
-npm run start
+npm run dev
 ```
