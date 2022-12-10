@@ -1,0 +1,38 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Main",
+      "type": "node",
+      "request": "launch",
+      "preLaunchTask": "start",
+      "postDebugTask": "stop",
+      "cwd": "${workspaceFolder}/client",
+      "runtimeExecutable": "${workspaceFolder}/client/node_modules/.bin/electron",
+      "runtimeArgs": ["${workspaceFolder}/client/.", "--enable-logging", "--remote-debugging-port=9223"]
+    },
+    {
+      "name": "Renderer",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223,
+      "webRoot": "${workspaceFolder}/client",
+      "timeout": 30000
+    },
+    {
+      "name": "Server",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/server",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "start"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "All",
+      "configurations": ["Main", "Renderer", "Server"],
+      "stopAll": true
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:14.5
+    container_name: munchkin
+    ports:
+      - '6900:5432'
+    volumes:
+      - munchkin:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+
+volumes:
+  munchkin:
+    driver: local

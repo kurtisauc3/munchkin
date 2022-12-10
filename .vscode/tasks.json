@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "start",
+      "type": "npm",
+      "script": "start",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": "ˆ$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "parcel watch*",
+          "endsPattern": "Watching for changes*"
+        }
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/client"
+      }
+    },
+    {
+      "label": "stop",
+      "command": "echo ${input:terminate}",
+      "type": "shell",
+      "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}/client"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "terminate",
+      "type": "command",
+      "command": "workbench.action.tasks.terminate",
+      "args": "terminateAll"
+    }
+  ]
+}
