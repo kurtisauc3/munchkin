@@ -1,16 +1,11 @@
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as express from 'express';
-import * as jwt from 'express-jwt';
 import * as http from 'http';
-import * as jwksRsa from 'jwks-rsa';
 import * as socketIo from 'socket.io';
-import * as url from 'url';
-import { apiV1UserRoutes } from './api';
-import { connectPostgres } from './connectPostgres';
-import { ApiRoutes } from './types';
+// import { connectPostgres } from './connectPostgres';
 
-const { AUTH0_DOMAIN, API_IDENTIFIER, SERVER_PORT, CLIENT_URL } = process.env;
+const { SERVER_PORT, CLIENT_URL } = process.env;
 
 class App {
   public app: express.Application;
@@ -28,36 +23,17 @@ class App {
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: false }));
 
-    // routing
-    this.app.use(
-      jwt.expressjwt({
-        secret: jwksRsa.expressJwtSecret({
-          cache: true,
-          rateLimit: true,
-          jwksRequestsPerMinute: 5,
-          jwksUri: `https://${AUTH0_DOMAIN}/.well-known/jwks.json`
-        }) as jwt.GetVerificationKey,
-        audience: API_IDENTIFIER,
-        issuer: `https://${AUTH0_DOMAIN}/`,
-        algorithms: ['RS256']
-      })
-    );
-
     // add routes here
-    const routes: Array<ApiRoutes> = [apiV1UserRoutes];
-    routes.forEach(({ versionPrefix, pathPrefix, router }) => {
-      this.app.use(`/api/${versionPrefix}/${pathPrefix}`, router);
-    });
 
     // postgres
-    connectPostgres
-      .initialize()
-      .then(() => {
-        console.log('[typeorm] Postgres connected');
-      })
-      .catch((err) => {
-        console.log('[typeorm] Postgres error', err);
-      });
+    // connectPostgres
+    //   .initialize()
+    //   .then(() => {
+    //     console.log('[typeorm] Postgres connected');
+    //   })
+    //   .catch((err) => {
+    //     console.log('[typeorm] Postgres error', err);
+    //   });
 
     // server
     this.server = http.createServer(this.app);

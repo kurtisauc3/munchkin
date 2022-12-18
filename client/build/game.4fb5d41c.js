@@ -1,4 +1,4 @@
-process.env.HMR_PORT=57316;process.env.HMR_HOSTNAME="localhost";// modules are defined as an array
+process.env.HMR_PORT=53000;process.env.HMR_HOSTNAME="localhost";// modules are defined as an array
 // [ module function, map of requires ]
 //
 // map of requires is short require name -> numeric require
@@ -117,94 +117,27 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"scenes/main-scene.ts":[function(require,module,exports) {
+})({"utils/socket-io.ts":[function(require,module,exports) {
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MainScene = void 0;
-require("Phaser");
-class MainScene extends Phaser.Scene {
-    constructor() {
-        super({ key: 'MainScene' });
-    }
-    init() {
-        this.serverPlugin = this.plugins.get('server-plugin');
-    }
-    preload() { }
-    create() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const isMyUsernameRegistered = (request = {}) => __awaiter(this, void 0, void 0, function* () {
-                const response = yield this.serverPlugin.api.post('v1/user/is-my-username-registered', request);
-                return response.answer === 'yes';
-            });
-            isMyUsernameRegistered();
-        });
-    }
-    update() { }
-}
-exports.MainScene = MainScene;
+exports.socketIo = void 0;
+const socket_io_client_1 = require("socket.io-client");
+const { SERVER_URL } = process.env;
+const socketIo = (0, socket_io_client_1.io)(SERVER_URL, {
+    autoConnect: true,
+    transports: ['websocket']
+});
+exports.socketIo = socketIo;
+socketIo.on('connect_error', (error) => console.log('[socket.io-client] Connect to server error', error));
 
-},{}],"plugins/electron.ts":[function(require,module,exports) {
+},{}],"utils/electron.ts":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userData = exports.electron = void 0;
+exports.electron = void 0;
 const electron = window.require('electron');
 exports.electron = electron;
-const userData = electron.ipcRenderer.sendSync('userData');
-exports.userData = userData;
 
-},{}],"plugins/server.ts":[function(require,module,exports) {
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ServerPlugin = void 0;
-const axios_1 = __importDefault(require("axios"));
-const electron_1 = require("./electron");
-const socket_io_client_1 = require("socket.io-client");
-class ServerPlugin extends Phaser.Plugins.BasePlugin {
-    constructor(pluginManager) {
-        super(pluginManager);
-        const instance = axios_1.default.create();
-        const serverURL = electron_1.electron.ipcRenderer.sendSync('serverURL');
-        const baseUrl = `${serverURL}api/`;
-        instance.defaults.baseURL = baseUrl;
-        instance.defaults.headers.common['Authorization'] = `Bearer ${electron_1.userData.accessToken}`;
-        instance.defaults.headers.common['Content-Type'] = 'application/json';
-        instance.interceptors.response.use((response) => Promise.resolve(response.data), (error) => {
-            if (error.response) {
-                const { status, statusText } = error.response;
-                return Promise.reject({ status, statusText });
-            }
-            return Promise.reject({
-                status: 503,
-                statusText: 'Service unavailable'
-            });
-        });
-        this.api = instance;
-        this.socket = (0, socket_io_client_1.io)(serverURL, {
-            autoConnect: true,
-            auth: {
-                token: `Bearer ${electron_1.userData.accessToken}`
-            },
-            transports: ['websocket']
-        });
-        this.socket.on('connect', () => console.log('[socket.io-client] Client connected'));
-        this.socket.on('connect_error', (error) => console.log('[socket.io-client] Client error', error));
-    }
-}
-exports.ServerPlugin = ServerPlugin;
-
-},{"./electron":"plugins/electron.ts"}],"plugins/index.ts":[function(require,module,exports) {
+},{}],"utils/index.ts":[function(require,module,exports) {
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -221,35 +154,63 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./server"), exports);
+__exportStar(require("./socket-io"), exports);
 __exportStar(require("./electron"), exports);
 
-},{"./server":"plugins/server.ts","./electron":"plugins/electron.ts"}],"config.ts":[function(require,module,exports) {
+},{"./socket-io":"utils/socket-io.ts","./electron":"utils/electron.ts"}],"scenes/main-menu.ts":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MainMenu = void 0;
+require("Phaser");
+const utils_1 = require("../utils");
+class MainMenu extends Phaser.Scene {
+    constructor() {
+        super({ key: 'MainMenu' });
+    }
+    create() {
+        utils_1.socketIo.on('connect', () => console.log('[socket.io-client] Connected to server'));
+    }
+}
+exports.MainMenu = MainMenu;
+
+},{"../utils":"utils/index.ts"}],"scenes/index.ts":[function(require,module,exports) {
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./main-menu"), exports);
+
+},{"./main-menu":"scenes/main-menu.ts"}],"config.ts":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GameConfig = void 0;
-const main_scene_1 = require("./scenes/main-scene");
-const plugins_1 = require("./plugins");
+const scenes_1 = require("./scenes");
 const { GAME_WIDTH, GAME_HEIGHT } = process.env;
 exports.GameConfig = {
     title: 'Munchkin',
-    width: parseInt(GAME_WIDTH),
-    height: parseInt(GAME_HEIGHT),
     type: Phaser.AUTO,
-    parent: 'game',
-    scene: [main_scene_1.MainScene],
-    plugins: {
-        global: [
-            {
-                plugin: plugins_1.ServerPlugin,
-                key: 'server-plugin',
-                start: true
-            }
-        ]
-    }
+    scale: {
+        mode: Phaser.Scale.FIT,
+        parent: 'game',
+        width: parseInt(GAME_WIDTH),
+        height: parseInt(GAME_HEIGHT)
+    },
+    scene: [scenes_1.MainMenu] // TODO add more scenes here
 };
 
-},{"./scenes/main-scene":"scenes/main-scene.ts","./plugins":"plugins/index.ts"}],"game.ts":[function(require,module,exports) {
+},{"./scenes":"scenes/index.ts"}],"game.ts":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Game = void 0;

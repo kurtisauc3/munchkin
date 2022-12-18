@@ -1,5 +1,4 @@
 import { DataSource } from 'typeorm';
-import { Users } from './entities';
 
 const { POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB } = process.env;
 
@@ -11,7 +10,7 @@ const connectPostgres = new DataSource({
   password: POSTGRES_PASSWORD,
   database: POSTGRES_DB,
   synchronize: true,
-  entities: [Users],
+  entities: [],
   migrations: [],
   subscribers: []
 });

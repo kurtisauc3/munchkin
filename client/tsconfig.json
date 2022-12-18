@@ -1,15 +1,10 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
     "target": "ES6",
     "module": "CommonJS",
     "moduleResolution": "node",
-    "noImplicitAny": true,
-    "paths": {
-      "@shared": ["../shared"],
-      "@shared/*": ["../shared/*"]
-    }
+    "noImplicitAny": true
   },
-  "include": ["src/**/*", "../shared"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }
